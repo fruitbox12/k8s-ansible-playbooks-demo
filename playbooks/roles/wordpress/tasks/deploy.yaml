@@ -1,30 +1,17 @@
-- name: Deploy Wordpress database
-  block:
-  - name: Deploy Wordpress database
-    import_role:
-      name: mysql
-      tasks_from: deploy
-  - import_role:
-      name: mysql
-      tasks_from: wait_for_rollout
-  vars:
-    mysql_name: "{{ wordpress_db_name }}"
-  when: wordpress_deploy_db|bool
-  tags:
-  - wordpress_db
 
-- name: Create Wordpress resources
+
+- name: Create sentinal resources
   command: kubectl apply -f -
   args:
     stdin: "{{ lookup('template', item + '.yaml.j2') }}"
-  register: deploy_wordpress_svc_results
+  register: deploy_sentinal_svc_results
   changed_when: >-
-    deploy_wordpress_svc_results.stdout_lines
+    deploy_sentinal_svc_results.stdout_lines
       | reject('match', '^.* unchanged$') | list | length > 0
   loop:
-  - wordpress_pvc
-  - wordpress_deployment
-  - wordpress_svc
+  - sentinal_pvc
+  - sentinals_deployment
+  - sentinal_svc
   notify:
   - Wait for Wordpress service to roll out
   - Wait for Wordpress service to listen on external address
